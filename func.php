@@ -26,8 +26,7 @@ function makemenu() {
 	//DEBUG END
 	global $pdo;
 	echo '<div id="header_mouse_activity"><div id="header_bg"></div><div id="header">';
-	//echo '<div class="menu">' . "\n";
-	echo "	\t<table class='test1'><tr>\n";
+	echo "	\t<table class='menuitems'><tr>\n";
 	echo "	\t<th><a href='/'>Главная</a>\n";
 	$query = "select `table`,`label` from tables";
 	//DEBUG START
@@ -54,7 +53,12 @@ function view($table) {
 	}
 	//DEBUG END
 	global $pdo;
-	$query = "select * from `" . $table . "_view`";
+	if (isset($_GET['show_deleted']) && $_GET['show_deleted'] == 1) {
+		$suffix = "_deleted";
+	} else {
+		$suffix = "";
+	}
+	$query = "select * from `" . $table . "_view" . $suffix . "`";
 	if (DEBUG) debugger(DEBUG_QUERY, "$query", "start", "debugQueries");
 	$stmt = $pdo->prepare($query);
 	$stmt->execute();
@@ -109,10 +113,10 @@ function view($table) {
 	//DEBUG END
 }
 
-function exec_edit($table, $value) {
+function form_edit($table, $value) {
 	//DEBUG START
 	global $debugscript;
-	$debugfunc = "exec_edit($table, $value)";
+	$debugfunc = "form_edit($table, $value)";
 	if (DEBUG) debugger(DEBUG_CALL, $debugscript . " : " . $debugfunc);
 	try {
 	if (!isset($table) || !isset($value)) {
@@ -147,10 +151,10 @@ function exec_edit($table, $value) {
 	//DEBUG END
 }
 
-function exec_add($table) {
+function form_add($table) {
 	//DEBUG START
 	global $debugscript;
-	$debugfunc = "exec_add($table)";
+	$debugfunc = "form_add($table)";
 	if (DEBUG) debugger(DEBUG_CALL, $debugscript . " : " . $debugfunc);
 	try {
 	if (!isset($table)) {
@@ -181,10 +185,10 @@ function exec_add($table) {
 	//DEBUG END
 }
 
-function exec_del($table, $value) {
+function form_del($table, $value) {
 	//DEBUG START
 	global $debugscript;
-	$debugfunc = "exec_del($table, $value)";
+	$debugfunc = "form_del($table, $value)";
 	if (DEBUG) debugger(DEBUG_CALL, $debugscript . " : " . $debugfunc);
 	try {
 	if (!isset($table) || !isset($value)) {
@@ -205,7 +209,7 @@ function exec_del($table, $value) {
 	foreach($row as $key => $field) {
 		echo "<tr><td>$key<td>$field\n";
 	}
-	echo "</table></div>\n";
+	echo "</table><a href='del.php?proceed=1&table=$table&$id=$value'>Удалить</a></div>\n";
 	//DEBUG START
 	} catch (Exception $e) {
 		if (DEBUG) {
@@ -297,7 +301,7 @@ function edit($table, $id) {
 		}
 	}
 	if ($tableexist) {
-		exec_edit($table, $id);
+		form_edit($table, $id);
 	} else {
 		throw new Exception("'id' or 'table' values are not valid");
 	}
@@ -339,7 +343,7 @@ function add($table) {
 		}
 	}
 	if ($tableexist) {
-		exec_add($table);
+		form_add($table);
 	} else {
 		throw new Exception("'table' value is not valid");
 	}
@@ -382,7 +386,7 @@ function del($table, $id) {
 		}
 	}
 	if ($tableexist) {
-		exec_del($table, $id);
+		form_del($table, $id);
 	} else {
 		throw new Exception("'id' or 'table' values are not valid");
 	}
@@ -413,14 +417,14 @@ function checkTable($table) {
 	return $check;
 }
 
-function update($record) {
+function exec_edit($record) {
 	global $pdo;
 	$table = $record['table'];
 	if (!checkTable($table)) {
 		echo "<h1>checktable false</h1>\n";
 		die;
 	}
-	$query = "update $table \n";
+	$query = "update $table set \n";
 	$i = 0;
 	$comma = ",\n";
 	foreach($record as $key => $field) {
@@ -434,18 +438,52 @@ function update($record) {
 				$comma = "\n";
 			}
 			$fields[] = [$key, $field];
-			$query = $query . "\tset $key = :$key" . $comma;
+			$query = $query . "\t$key = :$key" . $comma;
 		}
 	}
 	$query = $query . " where $fieldid = :$fieldid";
 	$stmt = $pdo->prepare($query);
 	echo "<pre>";
 	foreach ($fields as $field) {
-		$stmt->bindValue(":$field[0]", $field[1]);
+		echo "$field[0], $field[1]\n";
+		$stmt->bindValue(":".$field[0], $field[1]);
 	}
+	$stmt->execute();
 	echo $query;
-	echo "</pre>";
-	//$stmt->execute();
+	echo "</pre>\n";
+	echo "<p>Вернуться на <a href='/'>главную</a>";
+}
+
+function exec_del($record) {
+	global $pdo;
+	$table = $record['table'];
+	if (!checkTable($table)) {
+		echo "<h1>checktable false</h1>\n";
+		die;
+	}
+	$query = "update $table set deleted = 1\n";
+	$i = 0;
+	foreach($record as $key => $field) {
+		$i++;
+		if($i > 2) {
+			if($i == 3) {
+				$fieldid = $key;
+				$id = $field;
+			}
+			$fields[] = [$key, $field];
+		}
+	}
+	$query = $query . " where $fieldid = :$fieldid";
+	$stmt = $pdo->prepare($query);
+	echo "<pre>";
+	foreach ($fields as $field) {
+		echo "$field[0], $field[1]\n";
+		$stmt->bindValue(":".$field[0], $field[1]);
+	}
+	$stmt->execute();
+	echo $query;
+	echo "</pre>\n";
+	echo "<p>Вернуться на <a href='/'>главную</a>";
 }
 
 function getTableLabel($table) {
@@ -555,9 +593,9 @@ function createtable($table) {
 	$queryupdatemeta = $queryupdatemeta_start . $queryupdatemeta_middle . $queryupdatemeta_end;
 
 	$queryupdatetables = "insert into `tables` (`table`, `label`) values \n  ('" . $tname . "', '" . $tlabel . "');";
-	echo "<h3>table</h3><pre>\n";
+	/*echo "<h3>table</h3><pre>\n";
 	print_r($table);
-	echo "\n\n</pre>";
+	echo "\n\n</pre>";*/
 	echo "<h3>querycreatetable</h3><pre>\n$querycreatetable\n\n</pre>";
 	echo "<h3>queryupdatemeta</h3><pre>\n$queryupdatemeta\n\n</pre>";
 	echo "<h3>queryupdatetables</h3><pre>\n$queryupdatetables\n\n</pre>";
@@ -570,6 +608,75 @@ function createtable($table) {
 	$stmt = $pdo->prepare($queryupdatetables);
 	$stmt->execute();
 	//*/
+	
+	//DEBUG START
+	} catch (Exception $e) {
+		if (DEBUG) {
+			debugger(DEBUG_ERROR, $e->getFile() . ":" . $e->getLine() . ":" . $debugfunc, $e->getMessage());
+			viewDebugInfo();
+			die();
+		} else showError();
+	}
+	//DEBUG END
+}
+
+function createview($table, $test = false) {
+	//DEBUG START
+	global $debugscript;
+	$debugfunc = "createview(table)";
+	if (DEBUG) debugger(DEBUG_CALL, $debugscript . " : " . $debugfunc);
+	try {
+	if (!isset($table)) {
+		throw new Exception('no argument "table" passed');
+	}
+	//DEBUG END
+	global $pdo;
+	$i = 0;
+	$tname = $table[0];
+	$tjoins = $table[1];
+	$torder = $table[2];
+	$fields = $table[3];
+	$querycreateview_create = "CREATE OR REPLACE VIEW `" . $tname;
+	$querycreateview_create1 = $querycreateview_create . "_view`";
+	$querycreateview_create2 = $querycreateview_create . "_view_deleted`";
+	$querycreateview_select = " AS SELECT \n";
+	foreach($fields as $field) {
+		$fname = $field[0];
+		$flabel = $field[1];
+		$querycreateview_select .= "  `" . $fname . "` AS `" . $flabel . "`";
+		$i++;
+		if ($i != count($fields)) {
+			$querycreateview_select .= ",\n";
+		}
+	}
+	if ($tjoins == null) {
+		$querycreateview_from = " \n" . 'FROM `' . $tname . "`";
+	} else {
+		$querycreateview_from = " \n" . 'FROM { oj `' . $tname . "`";
+		foreach($tjoins as $tjoin) {
+			$querycreateview_from .= "\n natural left join `" . $tjoin . "`";
+		}
+		$querycreateview_from .= '}';
+	}
+	$querycreateview_where = " \nWHERE deleted = ";
+	$querycreateview_where1 = '0';
+	$querycreateview_where2 = '1';
+	$querycreateview_order = " \nORDER BY " . $torder . ';';
+	$querycreateview1 = $querycreateview_create1 . $querycreateview_select . $querycreateview_from . $querycreateview_where . $querycreateview_where1 . $querycreateview_order;
+	$querycreateview2 = $querycreateview_create2 . $querycreateview_select . $querycreateview_from . $querycreateview_where . $querycreateview_where2 . $querycreateview_order;
+	
+	/*echo "<h3>table</h3><pre>\n";
+	print_r($table);
+	echo "\n\n</pre>";*/
+	echo "<h3>querycreateview1</h3><pre>\n$querycreateview1\n\n</pre>";
+	echo "<h3>querycreateview2</h3><pre>\n$querycreateview2\n\n</pre>";
+	
+	if (!$test) {
+		$stmt = $pdo->prepare($querycreateview1);
+		$stmt->execute();
+		$stmt = $pdo->prepare($querycreateview2);
+		$stmt->execute();
+	}
 	
 	//DEBUG START
 	} catch (Exception $e) {
