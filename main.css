@@ -1,0 +1,61 @@
+div.menu {position:fixed; top:0px; width:100%; height:100px;}
+a:link, a:visited	{color:#888888; text-decoration:none;}
+a:hover,a:active	{color:#333333;}
+.error {color: red;}
+.bold {font-weight: bold;}
+.center {margin:auto; width:80%;}
+
+table.test1 									{border-collapse:collapse; width:100%;}
+table.test1 tr:nth-child(odd)					{background-color:#F6F4F0;}
+table.test1 tr:nth-child(even)					{background-color:#ffffff;}
+table.test1 tr.fixzebra							{background-color:#F6F4F0;}
+table.test1 th									{color:#ffffff; background-color:#555555; border:1px solid #555555; font-size:12px; padding:3px; vertical-align:top; text-align:left;}
+table.test1 th a:link,table.test1 th a:visited	{color:#ffffff;}
+table.test1 th a:hover,table.test1 th a:active	{color:#EE872A;}
+table.test1 td									{border:1px solid #d4d4d4; padding:5px; padding-top:7px; padding-bottom:7px; vertical-align:top;}
+table.test1 td.example_code						{vertical-align:bottom;}
+table.test1 tr:hover							{background-color:#6fbaEE;}
+
+#header_mouse_activity{
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	background: transparent;
+	width: 100%;
+	height: 50px;
+	z-index: 1000000;
+}
+
+#header_bg{
+    background: #ffffff;width:100%;
+    box-shadow: 0 0 5px black; /* Параметры тени */
+    box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Параметры тени */
+    -moz-box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Для Firefox */
+    -webkit-box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Для Safari и Chrome */
+    position:fixed;
+    top:-50px;
+    right:0;
+    left:0;
+    z-index: 999;
+    height:45px;
+     -webkit-transition: top 0.3s;
+	  -moz-transition: top 0.3s;
+	  -o-transition: top 0.3s;
+	  transition: top 0.3s;
+}
+
+#header{width:100%;text-align:center;
+    position:fixed;
+    top:-50px;
+    right:0;
+    left:0;
+    z-index: 10001;
+     -webkit-transition: top 0.3s;
+	  -moz-transition: top 0.3s;
+	  -o-transition: top 0.3s;
+	  transition: top 0.3s;
+}
+
+#header_mouse_activity:hover #header_bg{top:0;}
+#header_mouse_activity:hover #header{top:0;}

@@ -1,0 +1,38 @@
+- написать функцию для импорта
+- подготовить данные для импорта
+- подготовить базу данных для импорт
+- импортировать данные
+- создать представления для всех справочников
+- создать слой абстракции для работы с базой данных
+- переписать существующие функции с использованием представлений
+- написать функции для добавления/редактирования/удаления записей
+- !!! написать функцию для создания таблиц в БД и вставки данных
+- добавить таблицы: 
+- добавить поля ОС: стоимость, серийный номер
+- добавить поля с флагом удаления
+
+:: ОСНОВНЫЕ СРЕДСТВА
++ основные средства: items [+sn, +price];
+
+:: РАСХОДНЫЕ МАТЕРИАЛЫ
+[v] модели РМ: rmmodels [rmmodelID, rmmodel, capacity, price, stateID, vendorID];
+[v] сопоставление моделей принтеров и моделей РМ: rmprinters [rmprinterID, rmmodelID, modelID];
++ наличие и размещение РМ: rms [rmID, itemID];
++ журнал покупки/заправки/восстановления/установки: [rmID, date, rmserviceID];
++ типы сервисов для РМ: rmservices [rmserviceID, rmservice];
+
+:: КОМПЛЕКТУЮЩИЕ
+[v] комплектующие: devices [deviceID, devicemodelID, itemID, warranty, accountID, price, sn, stateID];
+[v] модели комплектующих: devicemodels [devicemodelID, vendorID, devicemodel];
+[v] производители: vendors [vendorID, vendor];
+
+:: КОНТРАГЕНТЫ
++ контрагенты: contragents [contragentID, contragent];
++ счета: accounts [+ownerID];
+
+:: ПО
++ программное обеспечение: softwares [softwareID, software, softwarevendorID];
++ разработчики ПО: softwarevendors [softwarevendorID, softwarevendor];
++ сопоставление ПО компьютерам (+ лицензии): computersoftwares [computersoftwareID, softwareID, itemID, licence, accountID, price];
+
+:: ИСТОРИЯ ПЕРЕМЕЩЕНИЙ
