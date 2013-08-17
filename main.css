@@ -16,6 +16,14 @@ table.test1 td									{border:1px solid #d4d4d4; padding:5px; padding-top:7px; 
 table.test1 td.example_code						{vertical-align:bottom;}
 table.test1 tr:hover							{background-color:#6fbaEE;}
 
+table.menuitems 									{border-collapse:collapse; width:100%;}
+table.menuitems th									{color:#555555; background-color:#ffffff; border:1px solid #ffffff; font-size:10px; padding:3px; vertical-align:top; text-align:left;}
+table.menuitems th a:link,table.menuitems th a:visited	{color:#555555;}
+table.menuitems th a:hover,table.menuitems th a:active	{color:#EE872A;}
+table.menuitems td									{border:1px solid #d4d4d4; padding:5px; padding-top:7px; padding-bottom:7px; vertical-align:top;}
+table.menuitems td.example_code						{vertical-align:bottom;}
+table.menuitems th:hover							{background-color:#ffffff;}
+
 #header_mouse_activity{
 	position: fixed;
 	top: 0;
