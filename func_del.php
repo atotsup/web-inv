@@ -3,10 +3,10 @@
 function del($request) {
 	try {
 
-	if ( isset($request['table']) && isset($request['proceed']) && checkint($request['proceed']) == 1 && count($request)==3 ) {
+	if ( isset($request['table']) && isset($request['proceed']) && checkint($request['proceed']) == 1 ) {
 		exec_del($request);
 	} elseif (isset($request['table']) && isset($request['id']) && ctype_lower($request['table']) && ctype_digit($request['id'])) {
-		prep_del($request['table'], $request['id']);
+		prep_del($request);
 	} else {
 		throw new Exception('no arguments ("table" or "id") passed');
 	}
@@ -22,16 +22,18 @@ function del($request) {
 	}
 }
 
-function prep_del($table, $id) {
+function prep_del($request) {
 	//DEBUG START
 	global $debugscript;
-	$debugfunc = "prep_del($table, $id)";
+	$debugfunc = "prep_del($request)";
 	if (DEBUG) debugger(DEBUG_CALL, $debugscript . " : " . $debugfunc);
 	try {
-	if (!isset($table) || !isset($id)) {
+	if (!isset($request)) {
 		throw new Exception('no arguments "table" or "id" passed');
 	}
 	//DEBUG END
+	$table = $request['table'];
+	$id = $request['id'];
 	$id = checkint($id);
 	$table = checkstr($table);
 	$tableexist = false;
@@ -50,7 +52,7 @@ function prep_del($table, $id) {
 		}
 	}
 	if ($tableexist) {
-		form_del($table, $id);
+		form_del($request);
 	} else {
 		throw new Exception("'id' or 'table' values are not valid");
 	}
@@ -65,17 +67,19 @@ function prep_del($table, $id) {
 	//DEBUG END
 }
 
-function form_del($table, $value) {
+function form_del($request) {
 	//DEBUG START
 	global $debugscript;
-	$debugfunc = "form_del($table, $value)";
+	$debugfunc = "form_del($request)";
 	if (DEBUG) debugger(DEBUG_CALL, $debugscript . " : " . $debugfunc);
 	try {
-	if (!isset($table) || !isset($value)) {
+	if (!isset($request)) {
 		throw new Exception('no arguments "table" or "value" passed');
 	}
 	//DEBUG END
 	global $pdo;
+	$table = $request['table'];
+	$value = $request['id'];
 	$id = getIDname($table);
 	$query = "select * from $table where $id = :$id";
 	//DEBUG START
@@ -86,10 +90,17 @@ function form_del($table, $value) {
 	$stmt->execute();
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 	echo "<div class='center'><table class='test1'><tr>\n";
+	if( isset($request['restore']) && $request['restore'] == 1 ) {
+		$delmsg = "Восстановить";
+		$restore = "&restore=1";
+	} else {
+		$delmsg = "Удалить";
+		$restore = "";
+	}
 	foreach($row as $key => $field) {
 		echo "<tr><td>$key<td>$field\n";
 	}
-	echo "</table><a href='del.php?proceed=1&table=$table&$id=$value'>Удалить</a></div>\n";
+	echo "</table><h1><a href='del.php?proceed=1$restore&table=$table&$id=$value'>$delmsg</a></h1></div>\n";
 	//DEBUG START
 	} catch (Exception $e) {
 		if (DEBUG) {
@@ -108,16 +119,23 @@ function exec_del($record) {
 		echo "<h1>checktable false</h1>\n";
 		die;
 	}
-	$query = "update $table set deleted = 1\n";
+	if( isset($record['restore']) && $record['restore']==1 ) {
+		$delval = 0;
+		$delmsg = "Запись восстановлена";
+	} else {
+		$delval = 1;
+		$delmsg = "Запись удалена";
+	}
+	$query = "update $table set deleted = $delval\n";
 	$i = 0;
 	foreach($record as $key => $field) {
-		$i++;
-		if($i > 2) {
-			if($i == 3) {
+		if( $key != "proceed" and $key != "restore" and $key != "debug" and $key != "table") {
+			if($i == 0) {
 				$fieldid = $key;
 				$id = $field;
 			}
 			$fields[] = [$key, $field];
+			$i++;
 		}
 	}
 	$query = $query . " where $fieldid = :$fieldid";
@@ -126,8 +144,9 @@ function exec_del($record) {
 		$stmt->bindValue(":".$field[0], $field[1]);
 	}
 	$stmt->execute();
-	echo "<h1>Запись удалена</h1>\n";
-	echo "<p>Вернуться на <a href='/'>главную</a>";
+	makemenu();
+	echo "<h1>$delmsg</h1>\n";
+	view();
 }
 
 ?>
