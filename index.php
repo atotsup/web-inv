@@ -3,7 +3,7 @@ require('head.php');
 
 title("МБК инвентарь: главная");
 makemenu();
-view();
+//view();
 
 require('foot.php');
 ?>
